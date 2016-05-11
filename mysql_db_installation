@@ -1,0 +1,3 @@
+CREATE DATABASE 'twitter_trends' /*!40100 DEFAULT CHARACTER SET utf8 */
+USE 'twitter_trends'
+CREATE TABLE 'tweets' ('id' int(11) NOT NULL AUTO_INCREMENT, 'twitter_text' varchar(10000) COLLATE utf8mb4_unicode_ci DEFAULT NULL, 'created_date' datetime DEFAULT NULL, PRIMARY KEY ('id')) ENGINE=InnoDB AUTO_INCREMENT=150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
