@@ -6,25 +6,31 @@ import MySQLdb
 import re
 from authorization import authorize_user
 
-blacklisted_words = ["RT", "&amp;"]
+blacklisted_words = [u"RT", u"via", u"https://…", u"http://…", u"https://t…", u"Read"]
 
 
 # Using twitter search instead of streaming since KN is not yet supported
-def is_blacklistted(word):
+def is_blacklisted(word):
     if word.startswith('@'):  # Twitter Username
+        return True
+    if word.startswith('&'):
         return True
     if word in blacklisted_words:  # Look to handle it better.
         return True
-    if len(word) < 2:  # Mostly it will be conjunction
+    if len(word) < 3:  # Mostly conjunction words
         return True
     return False
 
 
 def update_word_counts(text):
     for word in text.split():
-        if is_blacklistted(word):
+        if is_blacklisted(word):
             continue
         word_count_map[word] = word_count_map.get(word, 0) + 1
+
+
+def remove_escape_sequence(word):
+    return word.replace('\_', '_')
 
 
 username = raw_input("Enter the username to authenticate:")
@@ -92,9 +98,18 @@ for tweet in latest_tweets:
     update_word_counts(tweet[1].decode('utf-8'))
 
 top_trends = sorted(word_count_map.items(), key=operator.itemgetter(1), reverse=True)
-for trend in top_trends[:10]:
-    print trend[0]
 
 db.commit()
 # disconnect from server
 db.close()
+tweet = u"ಇತ್ತೀಚಿನ ಕನ್ನಡ ಟ್ವೀಟಲ್ಲಿ ಹೆಚ್ಚು ಬಳಸಿದ ಪದಗಳು: "
+
+selected_trends = []
+trends_text = u", ".join(selected_trends)
+while len(trends_text) < 140 - len(tweet):
+    selected_trends.append(top_trends.pop(0)[0])
+    trends_text = u", ".join(selected_trends)
+
+tweet += trends_text
+print tweet
+twitter_api.update_status(status=tweet)
